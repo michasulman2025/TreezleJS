@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Treezle — Demo</title>
+  <link rel="stylesheet" href="../src/treezle.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: #1a1a1a;
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    .header {
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .header h1 span {
+      color: #16a34a;
+    }
+
+    .header p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .demo-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Demo cards ── */
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 13px;
+      color: #374151;
+    }
+
+    .card-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .card-body {
+      padding: 8px;
+    }
+
+    /* ── Options panel ── */
+    .options-panel {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .options-panel h2 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 16px;
+      color: #374151;
+    }
+
+    .options-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      align-items: center;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: #374151;
+      cursor: pointer;
+    }
+
+    .option input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: #16a34a;
+      cursor: pointer;
+    }
+
+    .option select {
+      font-size: 13px;
+      padding: 3px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      color: #374151;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    /* ── Event log ── */
+    .event-log {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 24px;
+    }
+
+    .event-log-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      font-weight: 600;
+      font-size: 13px;
+      color: #374151;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .event-log-clear {
+      font-size: 12px;
+      font-weight: 400;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #e5e7eb;
+      background: transparent;
+    }
+
+    .event-log-clear:hover { background: #f3f4f6; }
+
+    .event-log-body {
+      padding: 8px 0;
+      min-height: 80px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .event-entry {
+      padding: 4px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+      border-bottom: 1px solid #f9fafb;
+      animation: fadein 0.15s ease;
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .event-time  { color: #9ca3af; flex-shrink: 0; }
+    .event-name  { color: #16a34a; font-weight: 600; flex-shrink: 0; }
+    .event-data  { color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .event-empty {
+      padding: 20px 16px;
+      color: #d1d5db;
+      font-size: 12px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="header">
+    <h1>🌳 <span>Treezle</span></h1>
+    <p>Pure JavaScript TreeView component — no dependencies, no build step, no drama.</p>
+  </header>
+
+  <!-- Options -->
+  <div class="options-panel">
+    <h2>Options</h2>
+    <div class="options-row">
+      <label class="option">
+        <input type="checkbox" id="opt-multiselect" /> Multi-select
+      </label>
+      <label class="option">
+        <input type="checkbox" id="opt-rename" /> Inline rename
+      </label>
+      <label class="option">
+        <input type="checkbox" id="opt-icons" /> Show icons
+      </label>
+      <label class="option">
+        <input type="checkbox" id="opt-checkboxes" /> Checkboxes
+      </label>
+      <label class="option">
+        Theme:
+        <select id="opt-theme">
+          <option value="minimal">minimal</option>
+          <option value="explorer">explorer</option>
+        </select>
+      </label>
+      <label class="option">
+        Menu:
+        <select id="opt-menu">
+          <option value="None">None</option>
+          <option value="RightClick">Right-click</option>
+          <option value="EllipsisButton1">Ellipsis ⋯</option>
+          <option value="EllipsisButton2">Ellipsis ⋮</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <!-- Demo grid -->
+  <div class="demo-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">File Explorer</span>
+        <span class="card-badge">drag &amp; drop</span>
+      </div>
+      <div class="card-body">
+        <div id="tree-files"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Organisation</span>
+        <span class="card-badge">mixed types</span>
+      </div>
+      <div class="card-body">
+        <div id="tree-org"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Event log -->
+  <div class="event-log">
+    <div class="event-log-header">
+      Event log
+      <button class="event-log-clear" id="btn-clear">Clear</button>
+    </div>
+    <div class="event-log-body" id="log-body">
+      <div class="event-empty">Events will appear here…</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../src/treezle.js"></script>
+<script>
+  // ── Nodes ──────────────────────────────────────────────────────────────────
+
+  const fileNodes = [
+    { id: "f1",  parentId: null,  label: "src",           nodeType: "folder", isExpanded: true,  isDraggable: true, icon: "📁" },
+    { id: "f2",  parentId: "f1",  label: "components",    nodeType: "folder", isExpanded: true,  isDraggable: true, icon: "📁" },
+    { id: "f3",  parentId: "f2",  label: "TreeView.jsx",  nodeType: "file",   isDraggable: true, icon: "⚛️" },
+    { id: "f4",  parentId: "f2",  label: "Button.jsx",    nodeType: "file",   isDraggable: true, icon: "⚛️" },
+    { id: "f5",  parentId: "f1",  label: "treezle.js",    nodeType: "file",   isDraggable: true, icon: "📄" },
+    { id: "f6",  parentId: "f1",  label: "treezle.css",   nodeType: "file",   isDraggable: true, icon: "🎨" },
+    { id: "f7",  parentId: null,  label: "demo",          nodeType: "folder", isExpanded: false, isDraggable: true, icon: "📁" },
+    { id: "f8",  parentId: "f7",  label: "index.html",    nodeType: "file",   isDraggable: true, icon: "🌐" },
+    { id: "f9",  parentId: null,  label: "README.md",     nodeType: "file",   isDraggable: true, icon: "📝" },
+    { id: "f10", parentId: null,  label: "LICENSE",       nodeType: "file",   isReadOnly: true,  icon: "⚖️" },
+  ];
+
+  const orgNodes = [
+    { id: "o1", parentId: null,  label: "Treezle Corp",    nodeType: "company",    isExpanded: true  },
+    { id: "o2", parentId: "o1",  label: "Engineering",     nodeType: "department", isExpanded: true  },
+    { id: "o3", parentId: "o2",  label: "Micha Sulman",    nodeType: "person",     isSelected: true  },
+    { id: "o4", parentId: "o2",  label: "Frontend Guild",  nodeType: "team",       isExpanded: false },
+    { id: "o5", parentId: "o4",  label: "React Chapter",   nodeType: "team"  },
+    { id: "o6", parentId: "o4",  label: "Angular Chapter", nodeType: "team"  },
+    { id: "o7", parentId: "o1",  label: "Product",         nodeType: "department", isExpanded: false },
+    { id: "o8", parentId: "o7",  label: "Design",          nodeType: "team"  },
+    { id: "o9", parentId: "o7",  label: "Strategy",        nodeType: "team", isDisabled: true },
+  ];
+
+  const commands = [
+    { name: "rename", label: "✏️  Rename", nodeType: "",       show: true },
+    { name: "delete", label: "🗑️  Delete", nodeType: "file",   show: true },
+    { name: "add",    label: "➕  Add child", nodeType: "folder", show: true },
+    { name: "add",    label: "➕  Add member", nodeType: "team",   show: true },
+  ];
+
+  // ── Current options (shared) ───────────────────────────────────────────────
+
+  let currentOptions = {
+    theme:             "minimal",
+    showIcons:         true,
+    menuStyle:         "None",
+    multiSelect:       false,
+    allowInlineRename: false,
+    showCheckBoxes:    false,
+  };
+
+  // ── Init trees ─────────────────────────────────────────────────────────────
+
+  const treeFiles = new TreeView(
+    document.getElementById("tree-files"),
+    fileNodes,
+    currentOptions,
+    commands
+  );
+
+  const treeOrg = new TreeView(
+    document.getElementById("tree-org"),
+    orgNodes,
+    currentOptions,
+    commands
+  );
+
+  // ── Event logging ──────────────────────────────────────────────────────────
+
+  const logBody  = document.getElementById("log-body");
+  let   logEmpty = true;
+
+  function log(eventName, detail) {
+    if (logEmpty) {
+      logBody.innerHTML = "";
+      logEmpty = false;
+    }
+
+    const time = new Date().toLocaleTimeString("nl-NL", { hour12: false });
+    const label = detail.node?.label ?? "–";
+    const extra = detail.commandName
+      ? ` → ${detail.commandName}`
+      : detail.newLabel
+        ? ` → "${detail.newLabel}"`
+        : "";
+
+    const entry = document.createElement("div");
+    entry.className = "event-entry";
+    entry.innerHTML = `
+      <span class="event-time">${time}</span>
+      <span class="event-name">${eventName}</span>
+      <span class="event-data">"${label}"${extra}</span>
+    `;
+    logBody.prepend(entry);
+  }
+
+  const EVENTS = [
+    "onNodeClick", "onNodeSelect", "onNodeExpand", "onNodeCollapse",
+    "onNodeRename", "onNodeMoved", "onCommand", "onCheckChanged",
+    "onDropRejected",
+  ];
+
+  [document.getElementById("tree-files"), document.getElementById("tree-org")].forEach(el => {
+    EVENTS.forEach(name => {
+      el.addEventListener(`treezle:${name}`, (e) => log(name, e.detail));
+    });
+  });
+
+  document.getElementById("btn-clear").addEventListener("click", () => {
+    logBody.innerHTML = '<div class="event-empty">Events will appear here…</div>';
+    logEmpty = true;
+  });
+
+  // ── Options controls ───────────────────────────────────────────────────────
+
+  function updateOptions() {
+    currentOptions = {
+      ...currentOptions,
+      multiSelect:       document.getElementById("opt-multiselect").checked,
+      allowInlineRename: document.getElementById("opt-rename").checked,
+      showIcons:         document.getElementById("opt-icons").checked,
+      showCheckBoxes:    document.getElementById("opt-checkboxes").checked,
+      theme:             document.getElementById("opt-theme").value,
+      menuStyle:         document.getElementById("opt-menu").value,
+    };
+    treeFiles.setOptions(currentOptions);
+    treeOrg.setOptions(currentOptions);
+  }
+
+  document.querySelectorAll(".options-panel input, .options-panel select")
+    .forEach(el => el.addEventListener("change", updateOptions));
+
+  // Set initial icon checkbox state to match default
+  document.getElementById("opt-icons").checked = true;
+</script>
+
+</body>
+</html>
