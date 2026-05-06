@@ -7,6 +7,12 @@ No npm. No build step. No drama.
 Just drop in two files and go.
 ```
 
+  <img width="428" height="324" alt="image" src="https://github.com/user-attachments/assets/1c3fde44-2e96-400e-bf92-490e5f9b0201" />
+
+---
+  <img width="434" height="329" alt="image" src="https://github.com/user-attachments/assets/be2e0a20-a127-4720-936a-ea6b50d4beb0" />
+
+
 ---
 
 ## Features
