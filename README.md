@@ -168,6 +168,8 @@ tree.on("onNodeClick", ({ node }) => {
 | `onCommand` | `{ node, commandName }` | Context menu command clicked |
 | `onCheckChanged` | `{ node, isChecked }` | Checkbox toggled |
 | `onNodeAdded` | `{ node, parentId }` | Node added via `addNode()` |
+| `onNodeDeleted` | `{ node, nodes[] }` | Node (and descendants) deleted via `deleteNode()` |
+| `onNodeChanged` | `{ node }` | Node updated via `editNode()` |
 
 > **Note:** `nodes[]` in move/drop events is the full updated flat array — ready to sync back to your server.
 
@@ -191,6 +193,8 @@ tree.selectNode(id)        // Programmatically select a node
 tree.toggleSelect(id)      // Toggle selection state of a node
 
 tree.addNode(parentId, nodeJSON)  // Add a node under parentId (null = root)
+tree.deleteNode(id)               // Delete a node and all its descendants
+tree.editNode(nodeData)           // Merge fields into existing node — { id, ...fields }
 
 tree.on(event, handler)    // Subscribe to an event
 tree.off(event, handler)   // Unsubscribe
@@ -321,3 +325,4 @@ All modern browsers. No IE11. Life is too short.
 ## License
 
 MIT — [Micha Sulman](https://github.com/michasulman), 2026
+
