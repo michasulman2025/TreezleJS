@@ -38,16 +38,16 @@
  *   showCheckBoxes:    boolean,    // global — reserves checkbox column
  *   menuStyle:         "RightClick" | "EllipsisButton1" | "EllipsisButton2" | "None",
  *   styleClass:        string,     // extra CSS class on container
- *   theme:             "minimal" | "explorer"
+ *   theme:             "minimal" | "explorer" | "border"
  * }
  *
  * ── Command schema ─────────────────────────────────────────────────
  * {
- *   name:      string,   // unique — returned in OnCommand event
+ *   name:      string,   // unique — returned in onCommand event
  *   label:     string,   // menu item text
  *   nodeType:  string,   // "" = all types, otherwise filter by nodeType
  *   icon:      string,   // CSS class or image URL
- *   iconHover: string,   // CSS class or image URL — swapped in on hover (optional)
+ *   iconHover: string,   // alternative icon on hover (optional)
  *   show:      boolean   // false = never show
  * }
  *
@@ -66,6 +66,8 @@
  *   treezle:onCommand        → { node, commandName }
  *   treezle:onCheckChanged   → { node, isChecked }
  *   treezle:onNodeAdded      → { node, parentId }
+ *   treezle:onNodeDeleted    → { node, nodes[] }
+ *   treezle:onNodeChanged    → { node }
  */
 
 (function (global) {
@@ -241,19 +243,16 @@
 
     // ── Public API ──────────────────────────────────────────────────────────────
 
-    /** Replace all nodes and re-render. Clears selection. */
     setNodes(nodes) {
       this._tree = flatToNested(nodes || []);
       this._selectedIds = {};
       this._render();
     }
 
-    /** Replace the command list used for context menus. */
     setCommands(commands) {
       this._commands = toArray(commands);
     }
 
-    /** Merge new options and re-render. */
     setOptions(options) {
       const prev = this._opts;
       this._opts = Object.assign({}, prev, typeof options === "string" ? JSON.parse(options) : options);
@@ -265,10 +264,8 @@
       this._render();
     }
 
-    /** Returns a clean flat array of all nodes (current state, no internal refs). */
     getNodes() { return nestedToFlat(this._tree); }
 
-    /** Returns a flat array of nodes that have been modified since last setNodes(). */
     getChangedNodes() {
       const dirty = [];
       const walk  = (nodes) => nodes.forEach((n) => {
@@ -279,13 +276,8 @@
       return dirty;
     }
 
-    /** Expand a node by id. No-op if id not found. */
     expand(id)     { const n = this._findNode(String(id), this._tree); if (n) { n.isExpanded = true;  this._render(); } }
-
-    /** Collapse a node by id. No-op if id not found. */
     collapse(id)   { const n = this._findNode(String(id), this._tree); if (n) { n.isExpanded = false; this._render(); } }
-
-    /** Programmatically select a node by id. Clears any existing selection. */
     selectNode(id) { this._selectNodeById(String(id)); }
 
     /**
@@ -294,7 +286,7 @@
      * - multiSelect ON:  adds/removes the node from the current selection,
      *                    leaving other selected nodes untouched.
      * - multiSelect OFF: selects the node if not selected, deselects all if it was.
-     * Fires treezle:onNodeSelect → { node, selectedIds[] }
+     * Fires treezle:onNodeSelect u2192 { node, selectedIds[] }
      */
     toggleSelect(id) {
       const node = this._findNode(String(id), this._tree);
@@ -319,11 +311,9 @@
 
     /**
      * addNode(containerId, nodeJSON)
-     * Adds a new node under the container identified by containerId.
-     * If containerId is empty/null, the node is added as a root node.
-     * nodeJSON can be a JSON string or a plain object — partial node data is fine,
-     * missing fields are filled with sensible defaults via normalizeNode().
-     * The container is automatically expanded so the new node is visible.
+     * Adds a new node under containerId. Pass null/empty for root level.
+     * nodeJSON can be a JSON string or plain object — missing fields get defaults.
+     * The parent is automatically expanded so the new node is visible.
      * Fires treezle:onNodeAdded → { node, parentId }
      */
     addNode(containerId, nodeJSON) {
@@ -344,8 +334,8 @@
           console.warn("Treezle.addNode: container not found:", parentId);
           return null;
         }
-        newNode.parentId    = parentId;
-        container._children = container._children || [];
+        newNode.parentId     = parentId;
+        container._children  = container._children || [];
         container._children.push(newNode);
         container.isExpanded = true;
         container._dirty     = true;
@@ -357,6 +347,101 @@
       this._render();
       this._emit("onNodeAdded", { node: cloneNode(newNode), parentId: newNode.parentId });
       return cloneNode(newNode);
+    }
+
+    /**
+     * deleteNode(id)
+     * Removes a node and all its descendants from the tree.
+     * Fires treezle:onNodeDeleted → { node, nodes[] }
+     * nodes[] is the full updated flat array — ready to sync back to the server.
+     */
+    deleteNode(id) {
+      const nodeId = String(id);
+
+      // Collect all ids to remove (node + all descendants)
+      const toRemove = new Set();
+      const collectIds = (nodes) => {
+        nodes.forEach((n) => {
+          if (toRemove.has(n.id) || n.id === nodeId) {
+            toRemove.add(n.id);
+            if (n._children) collectIds(n._children);
+          } else if (n._children) {
+            collectIds(n._children);
+          }
+        });
+      };
+
+      // Find the node before removing (for the event payload)
+      const target = this._findNode(nodeId, this._tree);
+      if (!target) {
+        console.warn("Treezle.deleteNode: node not found:", nodeId);
+        return null;
+      }
+      const deleted = cloneNode(target);
+      toRemove.add(nodeId);
+      if (target._children) collectIds(target._children);
+
+      // Remove from tree recursively
+      const removeFrom = (nodes) => {
+        for (let i = nodes.length - 1; i >= 0; i--) {
+          if (toRemove.has(nodes[i].id)) {
+            nodes.splice(i, 1);
+          } else if (nodes[i]._children) {
+            removeFrom(nodes[i]._children);
+          }
+        }
+      };
+      removeFrom(this._tree);
+
+      // Clear selection if deleted node was selected
+      if (this._selectedIds[nodeId]) delete this._selectedIds[nodeId];
+
+      this._render();
+      const updatedNodes = nestedToFlat(this._tree);
+      this._emit("onNodeDeleted", { node: deleted, nodes: updatedNodes });
+      return deleted;
+    }
+
+    /**
+     * editNode(nodeData)
+     * Merges nodeData into the existing node with the same id.
+     * Only the fields present in nodeData are updated — others are left untouched.
+     * nodeData must contain at least { id }.
+     * nodeData can be a JSON string or plain object.
+     * Fires treezle:onNodeChanged → { node }
+     */
+    editNode(nodeData) {
+      let raw;
+      try {
+        raw = typeof nodeData === "string" ? JSON.parse(nodeData) : nodeData;
+      } catch (e) {
+        console.error("Treezle.editNode: invalid nodeData", e);
+        return null;
+      }
+
+      if (!raw.id) {
+        console.warn("Treezle.editNode: nodeData must contain an id");
+        return null;
+      }
+
+      const node = this._findNode(String(raw.id), this._tree);
+      if (!node) {
+        console.warn("Treezle.editNode: node not found:", raw.id);
+        return null;
+      }
+
+      // Merge — skip internal fields (_children, _dirty etc.)
+      const INTERNAL = new Set(["_children", "_dirty", "_loaded"]);
+      Object.keys(raw).forEach((key) => {
+        if (!INTERNAL.has(key)) {
+          node[key] = raw[key];
+        }
+      });
+      node._dirty = true;
+
+      this._render();
+      this._emit("onNodeChanged", { node: cloneNode(node) });
+      return cloneNode(node);
     }
 
     on(event, handler) {
@@ -490,7 +575,7 @@
       if (hasCommands && (menuStyle === "EllipsisButton1" || menuStyle === "EllipsisButton2")) {
         const btn = document.createElement("button");
         btn.className = "tv-ellipsis " + (menuStyle === "EllipsisButton1" ? "tv-ellipsis-h" : "tv-ellipsis-v");
-        btn.title     = "Options";
+        btn.title     = "Opties";
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           this._openMenu(node, btn);
