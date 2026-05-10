@@ -58,7 +58,7 @@
  *   treezle:onNodeCollapse   → { node }
  *   treezle:beforeNodeExpand → { node, preventDefault() }
  *   treezle:beforeNodeCollapse → { node, preventDefault() }
- *   treezle:onNodeRename     → { node, oldLabel, newLabel }
+ *   treezle:onNodeRename     → { node, oldLabel}
  *   treezle:onStartDrag      → { node }
  *   treezle:onNodeMoved      → { node, fromParentId, toParentId, nodes[] }
  *   treezle:onDropNode       → { draggedNode, targetNode, nodes[] }
@@ -812,7 +812,7 @@
           if (newLabel !== oldLabel) {
             node.label  = newLabel;
             node._dirty = true;
-            this._emit("onNodeRename", { node: cloneNode(node), oldLabel, newLabel });
+            this._emit("onNodeRename", { node: cloneNode(node), oldLabel});
           }
         }
         this._render();
