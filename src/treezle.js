@@ -498,6 +498,7 @@
       const li = document.createElement("li");
       li.className  = "tv-node";
       li.dataset.id = node.id;
+      li.dataset.type = node.nodeType;
 
       const row = document.createElement("div");
       row.className = [
