@@ -149,6 +149,11 @@
       if (n.parentId && map[n.parentId]) map[n.parentId]._children.push(n);
       else roots.push(n);
     });
+    
+    // Sort children alphabetically by label
+    Object.values(map).forEach((n) => n._children.sort((a, b) => a.label.localeCompare(b.label)));
+    roots.sort((a, b) => a.label.localeCompare(b.label));
+    
     return roots;
   }
 
