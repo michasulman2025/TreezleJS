@@ -6,7 +6,7 @@ The main demo uses `assets/api.js`, `assets/demo.js` and `assets/demo.css`. The 
 
 ## Explore
 
-- Four scenarios: file explorer, task checklist, read-only navigation and node states.
+- Six scenarios: file explorer, task checklist, read-only navigation, node states, Service Catalog and Mission Control.
 - Four layouts: split view, stacked, compact sidebar and a gallery comparing all three themes.
 - Minimal, explorer and border themes, with optional orange or blue selection accents.
 - All four context-menu modes, optional icons and checkboxes, multi-selection, inline rename, indentation and container widths.

@@ -78,7 +78,7 @@
     heroText.append(el("span", "td-eyebrow", "COMPONENT LAB"), el("h2", "td-lab-title", "A tree for every workflow."), el("p", "td-lab-subtitle", "Explore layouts, tune the behavior, and try every client action."));
     coverage = el("div", "td-coverage", "0 / 17 actions exercised"); hero.append(heroText, coverage);
     var presets = el("div", "td-presets"), presetButtons = [];
-    [["workspace", "File explorer", "Folders, drag & drop, inline rename"], ["tasks", "Task checklist", "Checkboxes and multiple selection"], ["navigation", "Navigation", "Clean, read-only navigation"], ["permissions", "Node states", "Disabled, hidden and protected nodes"]].forEach(function (p) {
+    [["workspace", "File explorer", "Folders, drag & drop, inline rename"], ["tasks", "Task checklist", "Checkboxes and multiple selection"], ["navigation", "Navigation", "Clean, read-only navigation"], ["permissions", "Node states", "Disabled, hidden and protected nodes"], ["catalog", "Service Catalog", "Large cards and expressive icons"], ["mission", "Mission Control", "Dark console and system status"]].forEach(function (p) {
       var b = button(presets, "", function () { return preset(p[0]); }, "td-preset"); b.dataset.preset = p[0]; b.setAttribute("aria-pressed", "false"); b.append(el("strong", "", p[1]), el("span", "", p[2])); presetButtons.push(b);
     });
     var toolbar = el("div", "td-toolbar"); toolbar.appendChild(el("div", "td-brand", "Live playground"));
@@ -95,8 +95,8 @@
     optionInputs.theme = select(optionGrid, "Theme", [["minimal", "Minimal"], ["explorer", "Explorer"], ["border", "Border"]], function (v) { return option("theme", v); });
     optionInputs.menuStyle = select(optionGrid, "Context menu", [["None", "None"], ["RightClick", "Right click"], ["EllipsisButton1", "Always show dots"], ["EllipsisButton2", "Dots on hover"]], function (v) { return option("menuStyle", v); });
     select(optionGrid, "Width", [["100%", "Fill parent"], ["360px", "360 px"], ["240px", "240 px"]], function (v) { frame.style.width = v; });
-    optionInputs.indentPx = select(optionGrid, "Indentation", [["12", "12 px"], ["20", "20 px"], ["28", "28 px"], ["36", "36 px"]], function (v) { return option("indentPx", Number(v)); });
-    optionInputs.styleClass = select(optionGrid, "Selection accent", [["", "Theme default"], ["td-accent-warm", "Warm orange"], ["td-accent-blue", "Soft blue"]], function (v) { return option("styleClass", v); });
+    optionInputs.indentPx = select(optionGrid, "Indentation", [["12", "12 px"], ["20", "20 px"], ["24", "24 px"], ["28", "28 px"], ["30", "30 px"], ["36", "36 px"]], function (v) { return option("indentPx", Number(v)); });
+    optionInputs.styleClass = select(optionGrid, "Selection accent", [["", "Theme default"], ["td-accent-warm", "Warm orange"], ["td-accent-blue", "Soft blue"], ["td-catalog", "Service Catalog"], ["td-mission", "Mission Control"]], function (v) { return option("styleClass", v); });
     var switches = el("div", "td-switches"); controls.appendChild(switches);
     [["showIcons", "Icons"], ["showCheckBoxes", "Checkboxes"], ["multiSelect", "Multi-select"], ["allowInlineRename", "Inline rename"]].forEach(function (x) {
       var label = el("label", "td-switch"), input = el("input"); input.type = "checkbox"; input.checked = !!state.options[x[0]]; optionInputs[x[0]] = input;
@@ -148,10 +148,22 @@
       if (name === "tasks") { state.options.showCheckBoxes = true; state.options.theme = "border"; state.options.menuStyle = "None"; nodes.forEach(function (n, i) { n.isDraggable = false; n.isChecked = i === 2 || i === 3; }); }
       if (name === "navigation") { state.options.multiSelect = false; state.options.allowInlineRename = false; state.options.menuStyle = "None"; nodes.forEach(function (n) { n.isReadOnly = true; n.isDraggable = false; }); }
       if (name === "permissions") { state.options.showCheckBoxes = true; state.options.theme = "explorer"; nodes.find(function (n) { return n.id === "archive"; }).isDisabled = true; nodes.find(function (n) { return n.id === "design"; }).isReadOnly = true; nodes.find(function (n) { return n.id === "documents"; }).isDropTarget = false; nodes.find(function (n) { return n.id === "roadmap"; }).cssClass = "td-important"; nodes.push({ id: "hidden", parentId: "workspace", label: "Hidden node (visible through GetNodes)", isVisible: false }); }
+      if (name === "catalog" || name === "mission") {
+        state.options.styleClass = name === "catalog" ? "td-catalog" : "td-mission";
+        state.options.indentPx = name === "catalog" ? 30 : 24;
+        state.options.menuStyle = "EllipsisButton1";
+        var labels = name === "catalog" ? ["Service catalog", "Workplace services", "Equipment & accessories", "Request a laptop", "Applications", "Design software", "Help & support", "Contact the service desk"] : ["System overview", "Infrastructure", "Production cluster", "Compute nodes · healthy", "Data services", "Database · online", "Observability", "Alert queue · 2 warnings"];
+        nodes.forEach(function (n, i) {
+          n.label = labels[i];
+          n.icon = name === "catalog" ? ["td-catalog-grid", "td-catalog-briefcase", "td-catalog-device", "td-catalog-device", "td-catalog-app", "td-catalog-app", "td-catalog-help", "td-catalog-help"][i] : ["td-mission-pulse", "td-mission-server", "td-mission-server", "td-mission-ok", "td-mission-database", "td-mission-ok", "td-mission-pulse", "td-mission-warning"][i];
+          n.cssClass = name === "mission" ? (i === 7 ? "td-status-warning" : i === 3 || i === 5 ? "td-status-ok" : "") : "";
+        });
+        nodes[6].isExpanded = true;
+      }
       if (!api.call("getInstance", { ElementId: treeHost.id }).found) await run("initialize", { NodesJSON: pretty(nodes), OptionsJSON: pretty(state.options), CommandsJSON: pretty(commands) }, true);
       else { await run("setNodes", { NodesJSON: pretty(nodes) }, true); await run("setOptions", { OptionsJSON: pretty(state.options) }, true); await run("setCommands", { CommandsJSON: pretty(commands) }, true); }
       Object.keys(state.options).forEach(function (key) { var input = optionInputs[key]; if (input) { if (input.type === "checkbox") input.checked = !!state.options[key]; else input.value = String(state.options[key]); } }); await refreshNodes();
-      presetButtons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.preset === name)); }); treeTitle.textContent = { workspace: "Workspace", tasks: "Task checklist", navigation: "Navigation", permissions: "Node states" }[name]; status.textContent = "Sample loaded. Changes stay in memory for this session."; status.dataset.kind = "success";
+      presetButtons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.preset === name)); }); treeTitle.textContent = { workspace: "Workspace", tasks: "Task checklist", navigation: "Navigation", permissions: "Node states", catalog: "Service Catalog", mission: "Mission Control" }[name]; status.textContent = "Sample loaded. Changes stay in memory for this session."; status.dataset.kind = "success";
     }
     function renderFields() {
       var action = api.actions.find(function (a) { return a.method === methodChoice.value; }); description.textContent = action.description; apiFields.replaceChildren();
