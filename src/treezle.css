@@ -118,6 +118,7 @@
   position:       relative;
 }
 .tv-row:hover                { background: var(--tv-hover-bg); }
+.tv-row:focus-visible        { outline: 2px solid var(--tv-drop-border); outline-offset: -2px; }
 .tv-row.tv-selected          { background: var(--tv-selected-bg); color: var(--tv-selected-color); }
 .tv-row.tv-disabled          { color: var(--tv-disabled-color); cursor: default; pointer-events: none; }
 .tv-row.tv-drop-over         { background: var(--tv-drop-bg); outline: 1px dashed var(--tv-drop-border); outline-offset: -1px; }

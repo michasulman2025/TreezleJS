@@ -7,6 +7,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Keyboard navigation for visible tree nodes, with focus and accessibility state.
 - Optional dependency-free distribution build: IIFE for OutSystems, ES module, and CSS.
 - Standalone HTML component lab covering all 17 public API operations, with editable inputs and results, four presets, four layouts, option controls, a theme gallery and live event inspection.
 - Original two-tree examples preserved in `demo/basic.html`.

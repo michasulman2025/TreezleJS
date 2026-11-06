@@ -22,6 +22,7 @@ Just drop in two files and go.
 - **Drag & drop** — with circular-drop protection (we've thought of the edge cases)
 - **Inline rename** — double-click to rename, Enter to confirm, Escape to bail
 - **Multi-select** — Ctrl+click support
+- **Keyboard navigation** — arrow keys, Home/End, Enter and Space
 - **Checkboxes** — per-node, with global column reservation for alignment
 - **Context menus** — right-click, ellipsis button (horizontal or vertical), or none
 - **Themes** — `minimal`, `explorer`, and `border` out of the box

@@ -88,7 +88,7 @@
     select(toolbar, "Layout", [["split", "Split view"], ["stacked", "Stacked"], ["compact", "Compact sidebar"], ["gallery", "Theme gallery"]], function (v) { host.dataset.layout = v; });
     var body = el("div", "td-body"), panel = el("section", "td-tree-panel"), treeTitle = el("div", "td-panel-heading", "Workspace"), frame = el("div", "td-tree-frame");
     treeHost = el("div"); treeHost.id = host.id + "_tree"; state.treeIds.push(treeHost.id); frame.appendChild(treeHost);
-    panel.append(treeTitle, frame, el("p", "td-hint td-tree-hint", "Click to select. Ctrl+click for multiple selection. Double-click a label to rename."));
+    panel.append(treeTitle, frame, el("p", "td-hint td-tree-hint", "Use arrow keys, Home and End to navigate; Enter or Space selects. Ctrl+click selects multiple nodes; double-click to rename."));
     var controls = el("section", "td-controls"); controls.appendChild(el("div", "td-panel-heading", "Make it yours"));
     var optionGrid = el("div", "td-options-grid"), optionInputs = {}; controls.appendChild(optionGrid);
     async function option(key, value) { var patch = {}; patch[key] = value; await run("setOptions", { OptionsJSON: pretty(patch) }); state.options[key] = value; }

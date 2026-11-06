@@ -1,4 +1,4 @@
-/*! TreezleJS v1.1.0 | built 2026-11-06 18:54 UTC | (c) 2026 Micha Sulman | MIT License */
+/*! TreezleJS v1.1.0 | built 2026-11-06 19:07 UTC | (c) 2026 Micha Sulman | MIT License */
 /**
  * Treezle — Reusable TreeView component
  * (c) 2026 Micha Sulman
@@ -237,6 +237,7 @@
       this._dragState   = null;
       this._selectedIds = {};
       this._activeMenu  = null;
+      this._focusId     = null;
 
       // Apply classes
       this._el.classList.add("tv-container", "tv-theme-" + this._opts.theme);
@@ -486,13 +487,23 @@
 
     _render() {
       if (this._renaming) return; // don't blow away an active rename input
+      const focusedRow = document.activeElement && document.activeElement.classList.contains("tv-row") && this._el.contains(document.activeElement);
       this._el.innerHTML = "";
       const ul = document.createElement("ul");
       ul.className = "tv-list tv-root";
+      ul.setAttribute("role", "tree");
+      if (this._opts.multiSelect) ul.setAttribute("aria-multiselectable", "true");
       this._tree
         .filter((n) => n.isVisible !== false)
         .forEach((n) => this._renderNode(n, ul, 0));
       this._el.appendChild(ul);
+      const rows = Array.from(ul.querySelectorAll('.tv-row:not(.tv-disabled)'));
+      const current = rows.find(row => row.parentElement.dataset.id === this._focusId) || rows[0];
+      if (current) {
+        current.tabIndex = 0;
+        this._focusId = current.parentElement.dataset.id;
+        if (focusedRow) current.focus();
+      }
     }
 
     _renderNode(node, parentEl, depth) {
@@ -501,6 +512,7 @@
       li.dataset.id = node.id;
       li.dataset.type = node.nodeType;
       li.dataset.depth = depth;
+      li.setAttribute("role", "none");
 
       const row = document.createElement("div");
       row.className = [
@@ -510,6 +522,18 @@
         node.cssClass   || "",
       ].filter(Boolean).join(" ");
       row.style.paddingLeft = (depth * this._opts.indentPx) + "px";
+      row.setAttribute("role", "treeitem");
+      row.setAttribute("aria-level", String(depth + 1));
+      row.setAttribute("aria-selected", String(!!node.isSelected));
+      if (node.isDisabled) row.setAttribute("aria-disabled", "true");
+      if (node._children && node._children.some(child => child.isVisible !== false)) row.setAttribute("aria-expanded", String(!!node.isExpanded));
+      row.tabIndex = -1;
+      row.addEventListener("focus", () => {
+        this._focusId = node.id;
+        this._el.querySelectorAll('.tv-row[tabindex="0"]').forEach(other => { if (other !== row) other.tabIndex = -1; });
+        row.tabIndex = 0;
+      });
+      row.addEventListener("keydown", (e) => this._handleKey(e, node, row));
 
       // ── Arrow
       const arrow = document.createElement("span");
@@ -620,6 +644,7 @@
       if (node._children && node._children.length && node.isExpanded) {
         const childUl = document.createElement("ul");
         childUl.className = "tv-list";
+        childUl.setAttribute("role", "group");
         node._children
           .filter((n) => n.isVisible !== false)
           .forEach((child) => this._renderNode(child, childUl, depth + 1));
@@ -751,6 +776,33 @@
 
     // ── Interactions ────────────────────────────────────────────────────────────
 
+    _handleKey(e, node, row) {
+      if (e.target !== row || node.isDisabled || e.altKey || e.metaKey) return;
+      const rows = Array.from(this._el.querySelectorAll('.tv-row:not(.tv-disabled)'));
+      const index = rows.indexOf(row);
+      let target = null;
+      switch (e.key) {
+        case "ArrowDown": target = rows[index + 1]; break;
+        case "ArrowUp": target = rows[index - 1]; break;
+        case "Home": target = rows[0]; break;
+        case "End": target = rows[rows.length - 1]; break;
+        case "ArrowRight":
+          if (node._children && node._children.some(child => child.isVisible !== false)) {
+            if (!node.isExpanded) this._toggleExpand(node);
+            else { const child = row.parentElement.querySelector(':scope > .tv-list > .tv-node > .tv-row:not(.tv-disabled)'); if (child) target = child; }
+          }
+          break;
+        case "ArrowLeft":
+          if (node.isExpanded && node._children && node._children.some(child => child.isVisible !== false)) this._toggleExpand(node);
+          else { const parent = row.parentElement.parentElement.closest('.tv-node'); if (parent && !parent.firstElementChild.classList.contains('tv-disabled')) target = parent.firstElementChild; }
+          break;
+        case "Enter": case " ": this._handleClick(e, node); break;
+        default: return;
+      }
+      e.preventDefault();
+      if (target) target.focus();
+    }
+
     _handleClick(e, node) {
       this._closeMenu();
       if (this._opts.multiSelect && e.ctrlKey) {
@@ -765,6 +817,7 @@
       // Preserve label elements between clicks so the browser can deliver dblclick.
       this._el.querySelectorAll(".tv-node").forEach((li) => {
         li.firstElementChild.classList.toggle("tv-selected", !!this._selectedIds[li.dataset.id]);
+        li.firstElementChild.setAttribute("aria-selected", String(!!this._selectedIds[li.dataset.id]));
       });
       this._emit("onNodeClick",  { node: cloneNode(node) });
       this._emit("onNodeSelect", { node: cloneNode(node), selectedIds: Object.keys(this._selectedIds) });
