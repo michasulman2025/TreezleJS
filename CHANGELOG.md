@@ -4,6 +4,17 @@ All notable changes to Treezle will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).  
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Optional dependency-free distribution build: IIFE for OutSystems, ES module, and CSS.
+- Standalone HTML component lab covering all 17 public API operations, with editable inputs and results, four presets, four layouts, option controls, a theme gallery and live event inspection.
+- Original two-tree examples preserved in `demo/basic.html`.
+
+### Fixed
+- Tree containers fill their parent and can shrink inside flex/grid layouts, keeping long labels truncated.
+- Selection updates preserve label elements so double-click rename can start correctly.
+
 
 ---
 

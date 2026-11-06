@@ -42,6 +42,20 @@ Just drop in two files and go.
 
 ## Quick Start
 
+### Distribution files
+
+Run `node scripts/build.mjs` (or `npm run build`) to regenerate `dist/`. No package installation is required.
+
+| File | Use |
+|---|---|
+| `dist/treezle.iife.js` | OutSystems JavaScript resource or a browser script tag; exposes `window.TreeView` |
+| `dist/treezle.es.js` | Browser ES module; provides named and default `TreeView` exports and the same global for existing wrappers |
+| `dist/treezle.css` | Component styles; load your icon library separately if you use icons |
+
+The source files and the React/Angular wrappers remain available. Open `demo/index.html` for the standalone HTML component lab: all 17 API operations, four presets, four layouts, three themes, every option and a live event inspector. No installation, build step, server or OutSystems environment is needed to open the demo. The original two-tree examples remain in `demo/basic.html`. See `demo/README.md` for the demo controls and API examples.
+
+### Embed the component
+
 ```html
 <link rel="stylesheet" href="treezle.css" />
 <script src="treezle.js"></script>
