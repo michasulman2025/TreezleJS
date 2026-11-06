@@ -71,6 +71,10 @@
   user-select:  none;
   overflow:     auto;
   position:     relative;
+  box-sizing:   border-box;
+  width:        100%;
+  max-width:    100%;
+  min-width:    0;
 }
 
 /* ── Themes ─────────────────────────────────────────────────────── */
@@ -103,6 +107,8 @@
 /* ── Row ─────────────────────────────────────────────────────────── */
 .tv-row {
   display:        flex;
+  box-sizing:     border-box;
+  min-width:      0;
   align-items:    center;
   height:         var(--tv-line-height);
   cursor:         pointer;

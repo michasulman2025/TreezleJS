@@ -761,7 +761,10 @@
         node.isSelected = true;
         this._selectedIds = { [node.id]: true };
       }
-      this._render();
+      // Preserve label elements between clicks so the browser can deliver dblclick.
+      this._el.querySelectorAll(".tv-node").forEach((li) => {
+        li.firstElementChild.classList.toggle("tv-selected", !!this._selectedIds[li.dataset.id]);
+      });
       this._emit("onNodeClick",  { node: cloneNode(node) });
       this._emit("onNodeSelect", { node: cloneNode(node), selectedIds: Object.keys(this._selectedIds) });
     }
