@@ -2,10 +2,15 @@
 
 A lightweight, dependency-free TreeView component for the web — built with OutSystems in mind, but happy anywhere.
 
-```
-No npm. No build step. No drama.
-Just drop in two files and go.
-```
+   [![npm](https://img.shields.io/npm/v/treezle)](https://www.npmjs.com/package/treezle)
+
+   ```bash
+   npm install treezle
+   ```
+   Or via CDN:
+   ```html
+   <script src="https://cdn.jsdelivr.net/npm/treezle/dist/treezle.iife.js"></script>
+   ```
 
   <img width="428" height="324" alt="image" src="https://github.com/user-attachments/assets/1c3fde44-2e96-400e-bf92-490e5f9b0201" />
 
