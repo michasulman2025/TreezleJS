@@ -1,13 +1,19 @@
 {
-  "name": "treezlejs",
+  "name": "treezle",
   "version": "1.1.0",
-  "description": "Dependency-free TreeView for OutSystems and the web",
-  "private": false,
+  "description": "Dependency-free JavaScript treeview — drag & drop, checkboxes, keyboard nav, themes. For OutSystems, React, Angular or plain HTML.",
   "type": "module",
-  "scripts": {
-    "build": "node scripts/build.mjs"
-  },
   "main": "dist/treezle.iife.js",
   "module": "dist/treezle.es.js",
-  "files": ["dist", "src", "wrappers", "README.md", "LICENSE"]
+  "style": "dist/treezle.css",
+  "jsdelivr": "dist/treezle.iife.js",
+  "unpkg": "dist/treezle.iife.js",
+  "files": ["dist", "src", "wrappers", "README.md", "LICENSE"],
+  "scripts": { "build": "node scripts/build.mjs", "prepublishOnly": "npm run build" },
+  "keywords": ["treeview", "tree-view", "tree", "javascript", "vanilla-js", "drag-and-drop", "ui-component", "outsystems", "react", "angular"],
+  "author": "Micha Sulman",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/michasulman2025/TreezleJS.git" },
+  "homepage": "https://github.com/michasulman2025/TreezleJS#readme",
+  "bugs": "https://github.com/michasulman2025/TreezleJS/issues"
 }
