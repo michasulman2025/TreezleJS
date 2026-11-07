@@ -52,8 +52,6 @@ A lightweight, dependency-free TreeView component for the web — built with Out
 
 ### Distribution files
 
-Run `node scripts/build.mjs` (or `npm run build`) to regenerate `dist/`. No package installation is required.
-
 | File | Use |
 |---|---|
 | `dist/treezle.iife.js` | OutSystems JavaScript resource or a browser script tag; exposes `window.TreeView` |
@@ -271,16 +269,15 @@ Full variable list is in `src/treezle.css`.
 
 ### Icons
 
-Treezle works with any CSS icon library. The CSS includes an `@import` for [Remix Icon](https://remixicon.com) — the library used in the OutSystems reference implementation. To use it in your own project, either keep the import or load Remix Icon yourself:
+Treezle doesn't ship an icon library — bring your own. Any CSS icon library works (Remix Icon, Font Awesome, Lucide, …), and so do plain image URLs.
+
+`dist/treezle.css` contains no icon imports, so nothing extra gets loaded unless you ask for it. The examples and the OutSystems reference implementation use [Remix Icon](https://remixicon.com):
 
 ```html
-<!-- Option A: CDN -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4/fonts/remixicon.css" />
-
-<!-- Option B: already in treezle.css via @import "../remixicon.css" -->
 ```
 
-If you use a different icon library (Font Awesome, Lucide, etc.), simply remove or replace the `@import` line at the top of `treezle.css` and use the appropriate class names in your node's `icon` field.
+Then set the `icon` field on a node (or command) to a class name or an image URL:
 
 ```js
 // Remix Icon
@@ -293,7 +290,7 @@ If you use a different icon library (Font Awesome, Lucide, etc.), simply remove 
 { icon: "https://example.com/icons/folder.svg" }
 ```
 
----
+> **Note:** `src/treezle.css` still contains `@import url("../remixicon.css")` for the OutSystems setup. If you use the source files directly, remove or adjust that line.
 
 ## OutSystems Integration
 
@@ -346,5 +343,5 @@ All modern browsers. No IE11. Life is too short.
 
 ## License
 
-MIT — [Micha Sulman](https://github.com/michasulman), 2026
+MIT — [Micha Sulman](https://github.com/michasulman2025), 2026
 
