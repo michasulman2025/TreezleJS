@@ -2,6 +2,8 @@
 
 A lightweight, dependency-free TreeView component for the web — built with OutSystems in mind, but happy anywhere.
 
+**[▶ Try the live demo](https://michasulman2025.github.io/TreezleJS/demo/)**
+
    [![npm](https://img.shields.io/npm/v/treezle)](https://www.npmjs.com/package/treezle)
 
    ```bash
