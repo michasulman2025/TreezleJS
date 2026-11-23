@@ -58,6 +58,7 @@ export interface TreeNode {
 export interface TreeOptions {
   multiSelect?:       boolean;
   allowInlineRename?: boolean;
+  sortOrder?:         "alphabetical" | "input";
   indentPx?:          number;
   showIcons?:         boolean;
   showCheckBoxes?:    boolean;

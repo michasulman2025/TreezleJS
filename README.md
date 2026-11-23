@@ -129,6 +129,9 @@ Pass as the third argument to `new TreeView()`.
 | `menuStyle` | `string` | `"None"` | `"None"` \| `"RightClick"` \| `"EllipsisButton1"` \| `"EllipsisButton2"` |
 | `styleClass` | `string` | `""` | Extra CSS class added to the container |
 | `theme` | `string` | `"minimal"` | `"minimal"` \| `"explorer"` \| `"border"` |
+| `sortOrder` | `string` | `"alphabetical"` | `"alphabetical"` sorts sibling labels; `"input"` keeps supplied order |
+
+Changing `sortOrder` immediately reorders existing nodes without losing edits. New or moved nodes are appended to their parent; renames retain their position until the sort order changes or nodes reload.
 
 ---
 

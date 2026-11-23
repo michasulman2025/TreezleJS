@@ -1,4 +1,4 @@
-/*! TreezleJS v1.1.0 | built 2026-11-06 19:07 UTC | (c) 2026 Micha Sulman | MIT License */
+/*! TreezleJS v1.1.0 | built 2026-11-23 15:52 UTC | (c) 2026 Micha Sulman | MIT License */
 /**
  * Treezle — Reusable TreeView component
  * (c) 2026 Micha Sulman
@@ -85,6 +85,7 @@
     menuStyle:         "None",   // "None" | "RightClick" | "EllipsisButton1" | "EllipsisButton2"
     styleClass:        "",
     theme:             "minimal",
+    sortOrder:         "alphabetical", // "alphabetical" | "input"
   };
 
   // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -141,21 +142,26 @@
     return n;
   }
 
-  function flatToNested(nodes) {
+  function flatToNested(nodes, sortOrder) {
     const map   = {};
     const roots = [];
     const arr   = toArray(nodes).map(normalizeNode);
-    arr.forEach((n) => (map[n.id] = n));
+    arr.forEach((n, index) => { n._inputOrder = index; map[n.id] = n; });
     arr.forEach((n) => {
       if (n.parentId && map[n.parentId]) map[n.parentId]._children.push(n);
       else roots.push(n);
     });
 
-    // Sort children alphabetically by label
-    Object.values(map).forEach((n) => n._children.sort((a, b) => a.label.localeCompare(b.label)));
-    roots.sort((a, b) => a.label.localeCompare(b.label));
+    sortTree(roots, sortOrder);
 
     return roots;
+  }
+
+  function sortTree(nodes, order) {
+    nodes.sort(order === "input"
+      ? (a, b) => a._inputOrder - b._inputOrder
+      : (a, b) => a.label.localeCompare(b.label));
+    nodes.forEach(n => sortTree(n._children, order));
   }
 
   function nestedToFlat(nodes, parentId = null, acc = []) {
@@ -232,7 +238,8 @@
 
       this._opts        = Object.assign({}, DEFAULT_OPTIONS, typeof options  === "string" ? JSON.parse(options)  : options);
       this._commands    = toArray(commands);
-      this._tree        = flatToNested(typeof nodes === "string" ? JSON.parse(nodes) : nodes);
+      this._tree        = flatToNested(typeof nodes === "string" ? JSON.parse(nodes) : nodes, this._opts.sortOrder);
+      this._nextInputOrder = toArray(nodes).length;
       this._events      = {};
       this._dragState   = null;
       this._selectedIds = {};
@@ -251,7 +258,8 @@
     // ── Public API ──────────────────────────────────────────────────────────────
 
     setNodes(nodes) {
-      this._tree = flatToNested(nodes || []);
+      this._tree = flatToNested(nodes || [], this._opts.sortOrder);
+      this._nextInputOrder = toArray(nodes).length;
       this._selectedIds = {};
       this._render();
     }
@@ -263,6 +271,7 @@
     setOptions(options) {
       const prev = this._opts;
       this._opts = Object.assign({}, prev, typeof options === "string" ? JSON.parse(options) : options);
+      if (prev.sortOrder !== this._opts.sortOrder) sortTree(this._tree, this._opts.sortOrder);
       // Reapply container classes if theme or styleClass changed
       this._el.className = "";
       this._el.classList.add("tv-container", "tv-theme-" + this._opts.theme);
@@ -333,6 +342,7 @@
       }
 
       const newNode = normalizeNode(raw);
+      newNode._inputOrder = this._nextInputOrder++;
 
       if (containerId) {
         const parentId  = String(containerId);
@@ -438,7 +448,7 @@
       }
 
       // Merge — skip internal fields (_children, _dirty etc.)
-      const INTERNAL = new Set(["_children", "_dirty", "_loaded"]);
+      const INTERNAL = new Set(["_children", "_dirty", "_loaded", "_inputOrder"]);
       Object.keys(raw).forEach((key) => {
         if (!INTERNAL.has(key)) {
           node[key] = raw[key];
@@ -941,6 +951,7 @@
       this._removeFromTree(draggedNode.id, this._tree);
       draggedNode.parentId  = targetNode.id;
       draggedNode._dirty    = true;
+      draggedNode._inputOrder = this._nextInputOrder++;
       targetNode._children  = targetNode._children || [];
       targetNode._children.push(draggedNode);
       targetNode.isExpanded = true;

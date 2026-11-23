@@ -16,7 +16,7 @@
     var request = pending.get(requestId);
     if (request) { pending.delete(requestId); request.resolve({ Success: success, ResultJSON: resultJSON, ErrorMessage: errorMessage }); }
   }
-  var defaults = { theme: "minimal", multiSelect: true, allowInlineRename: true, showIcons: true, showCheckBoxes: false, menuStyle: "EllipsisButton1", indentPx: 20, styleClass: "" };
+  var defaults = { theme: "minimal", sortOrder: "alphabetical", multiSelect: true, allowInlineRename: true, showIcons: true, showCheckBoxes: false, menuStyle: "EllipsisButton1", indentPx: 20, styleClass: "" };
   var commands = [{ name: "inspect", label: "Inspect node", icon: "td-glyph-info" }, { name: "review", label: "Mark reviewed", icon: "td-glyph-file" }, { name: "addChild", label: "Add child", nodeType: "folder", icon: "td-glyph-folder" }];
   function sampleNodes() {
     return [
@@ -93,6 +93,7 @@
     var optionGrid = el("div", "td-options-grid"), optionInputs = {}; controls.appendChild(optionGrid);
     async function option(key, value) { var patch = {}; patch[key] = value; await run("setOptions", { OptionsJSON: pretty(patch) }); state.options[key] = value; }
     optionInputs.theme = select(optionGrid, "Theme", [["minimal", "Minimal"], ["explorer", "Explorer"], ["border", "Border"]], function (v) { return option("theme", v); });
+    optionInputs.sortOrder = select(optionGrid, "Node order", [["alphabetical", "Alphabetical"], ["input", "As supplied"]], function (v) { return option("sortOrder", v); });
     optionInputs.menuStyle = select(optionGrid, "Context menu", [["None", "None"], ["RightClick", "Right click"], ["EllipsisButton1", "Always show dots"], ["EllipsisButton2", "Dots on hover"]], function (v) { return option("menuStyle", v); });
     select(optionGrid, "Width", [["100%", "Fill parent"], ["360px", "360 px"], ["240px", "240 px"]], function (v) { frame.style.width = v; });
     optionInputs.indentPx = select(optionGrid, "Indentation", [["12", "12 px"], ["20", "20 px"], ["24", "24 px"], ["28", "28 px"], ["30", "30 px"], ["36", "36 px"]], function (v) { return option("indentPx", Number(v)); });
